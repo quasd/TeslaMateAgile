@@ -44,7 +44,7 @@ public class HomeAssistantService : IPriceDataService
         {
             var state = history[i];
 
-            # Work around ha truncating / otherwise missing price data.
+            // Work around ha truncating / otherwise missing price data.
             if (state.State != "unknown")
             {
                 previous_val = state.State;
