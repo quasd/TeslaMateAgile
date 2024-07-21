@@ -39,10 +39,18 @@ public class HomeAssistantService : IPriceDataService
             throw new Exception($"Home Assistant has incomplete data for date range {from.UtcDateTime:o}?end={to.UtcDateTime:o}, ensure entity and {nameof(TeslaMateOptions.LookbackDays)} are set correctly");
         }
         var prices = new List<Price>();
+        string previous_val = "";
         for (var i = 0; i < history.Count; i++)
         {
             var state = history[i];
-            var price = decimal.Parse(state.State);
+
+            # Work around ha truncating / otherwise missing price data.
+            if (state.State != "unknown")
+            {
+                previous_val = state.State;
+            }
+
+            var price = decimal.Parse(previous_val);
             var validFrom = state.LastUpdated;
             var validTo = (i < history.Count - 1) ? history[i + 1].LastUpdated : to;
 
