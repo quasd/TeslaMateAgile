@@ -45,11 +45,30 @@ public class HomeAssistantService : IPriceDataService
             var state = history[i];
 
             // Work around ha truncating / otherwise missing price data.
-            if (state.State != "unknown")
+            if (state.State == "unknown" || state.State == "unavailable")
             {
+                Console.WriteLine("Unknown price data!");
+                if (previous_val != "") {
+                    Console.WriteLine($"Old data found, will use it! {previous_val}");
+                } else {
+                    Console.WriteLine("No old data found, this will probably fail! Trying to get next data!");
+                    if (history.Count-1 >= i+1 ){
+                        var next_value = history[i+1].State;
+                        if (next_value != "unknown" && next_value != "unavailable") 
+                        {
+                            Console.WriteLine($"Next data found, using: {next_value}");
+                            previous_val = next_value;
+                        } else {
+                            Console.WriteLine("Next data also unavaialble, maybe write a loop. Failing");
+                        }
+                    } else {
+                        Console.WriteLine("This is last value in list, no next value to read. Failing");
+                    }
+                }
+            } else {
                 previous_val = state.State;
             }
-
+            
             var price = decimal.Parse(previous_val);
             var validFrom = state.LastUpdated;
             var validTo = (i < history.Count - 1) ? history[i + 1].LastUpdated : to;
